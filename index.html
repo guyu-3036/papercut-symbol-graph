@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>剪纸符号化分割图谱</title>
+<style>
+  :root{
+    --bg:#f5f0e4; --card:#fffdf8; --ink:#2b2620; --sub:#6f6656; --line:#e6ddc9;
+    --red:#a4262c; --red2:#c8102e; --brown:#8a5a2b;
+    --c-core:#7a1f1f; --c-symbol:#c8102e; --c-theme:#c07a2a;
+    --c-tech:#3f6b5a; --c-region:#4a5d8c; --c-heritage:#8c4a6b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{background:#e9e2d2}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Source Han Sans SC",sans-serif;
+    background:var(--bg); color:var(--ink); max-width:480px; margin:0 auto;
+    min-height:100vh; box-shadow:0 0 24px rgba(0,0,0,.08);
+  }
+  .serif{font-family:"Noto Serif SC","STSong","SimSun",serif}
+  /* 顶栏 */
+  .topbar{
+    position:sticky; top:0; z-index:50; background:rgba(245,240,228,.95);
+    backdrop-filter:blur(6px); border-bottom:1px solid var(--line);
+    height:52px; display:flex; align-items:center; justify-content:center;
+    font-weight:600; font-size:16px; letter-spacing:1px;
+  }
+  .topbar .back{position:absolute; left:16px; font-size:22px; color:var(--ink); text-decoration:none}
+  .page{padding:20px 16px 48px}
+  /* 头部 */
+  .kicker{display:flex; align-items:center; gap:10px; color:var(--red);
+    font-size:11px; letter-spacing:3px; font-weight:600; margin-top:8px}
+  .kicker::before{content:""; width:26px; height:2px; background:var(--red)}
+  h1{font-size:30px; line-height:1.25; margin:10px 0 12px; color:var(--red); letter-spacing:1px}
+  .lead{font-size:13.5px; line-height:1.9; color:var(--sub); text-align:justify}
+  .pills{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  .pill{border:1px solid #d9cdb4; background:#fbf7ec; border-radius:999px;
+    padding:6px 12px; font-size:11.5px; color:var(--sub)}
+  .pill b{color:var(--ink); font-weight:600}
+  hr{border:none; border-top:1px solid var(--line); margin:20px 0}
+  /* 统计卡 */
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px}
+  .stat .num{font-size:26px; font-weight:700; color:var(--red)}
+  .stat .lab{font-size:12px; color:var(--sub); margin-top:2px}
+  /* 章节标题 */
+  .sec{margin-top:30px}
+  .sec-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px}
+  .sec-head .no{font-size:26px; font-weight:300; color:#cbbd9d; font-family:Georgia,serif}
+  .sec-head h2{font-size:20px; letter-spacing:1px}
+  .sec-head .side{font-size:11px; color:var(--sub); text-align:right; line-height:1.6}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px}
+  .card h3{font-size:15.5px; margin-bottom:4px}
+  .card .cap{font-size:11.5px; color:var(--sub); margin-bottom:12px}
+  /* 维度筛选 */
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 12px}
+  .chip{display:inline-flex; align-items:center; gap:6px; border:1px solid #d9cdb4;
+    border-radius:999px; padding:5px 11px; font-size:11.5px; color:var(--ink);
+    background:#fbf7ec; cursor:pointer; user-select:none; transition:.15s}
+  .chip .dot{width:8px; height:8px; border-radius:50%}
+  .chip .cnt{color:var(--sub)}
+  .chip.off{opacity:.38; filter:grayscale(.7)}
+  /* 搜索 */
+  .searchrow{display:flex; gap:8px; margin-bottom:10px}
+  .searchrow input{
+    flex:1; border:1px solid #d9cdb4; background:#fbf7ec; border-radius:999px;
+    padding:8px 14px; font-size:12.5px; outline:none; color:var(--ink)}
+  .searchrow input:focus{border-color:var(--red2)}
+  .searchrow button{
+    border:1px solid #d9cdb4; background:#fbf7ec; border-radius:999px;
+    padding:8px 16px; font-size:12.5px; color:var(--sub); cursor:pointer}
+  .searchrow button:active{background:#f0e8d4}
+  /* 图谱 */
+  .graph-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    background:
+      radial-gradient(circle at 30% 20%, #fffdf6 0%, #faf4e6 100%);
+    position:relative; touch-action:none}
+  #graph{display:block; width:100%; height:440px; cursor:grab}
+  .graph-hint{font-size:11px; color:var(--sub); text-align:center; padding:8px 0 2px}
+  /* 节点详情 */
+  #detail{margin-top:12px; border-top:1px dashed var(--line); padding-top:12px; display:none}
+  #detail.show{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)} to{opacity:1}}
+  #detail .d-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  #detail .d-name{font-size:18px; font-weight:700}
+  #detail .d-cat{font-size:10.5px; color:#fff; border-radius:999px; padding:3px 9px}
+  #detail .d-w{font-size:11px; color:var(--sub); margin-left:auto}
+  #detail .wbar{height:5px; background:#f0e8d4; border-radius:99px; margin:8px 0 10px; overflow:hidden}
+  #detail .wbar i{display:block; height:100%; border-radius:99px;
+    background:linear-gradient(90deg,var(--red),var(--brown))}
+  #detail .row{font-size:12.5px; line-height:1.85; color:var(--sub); margin-bottom:8px; text-align:justify}
+  #detail .row b{color:var(--ink); font-weight:600}
+  #detail .rel{display:flex; flex-wrap:wrap; gap:6px}
+  #detail .rel span{font-size:11px; border:1px solid #d9cdb4; border-radius:999px;
+    padding:3px 10px; background:#fbf7ec; cursor:pointer}
+  #detail .rel span:active{background:#f0e8d4}
+  /* 条形图 */
+  .bars{margin-top:6px}
+  .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:12px; font-size:12.5px}
+  .bar-row .bl{width:92px; text-align:right; color:var(--ink); flex-shrink:0}
+  .bar-row .track{flex:1; height:14px; background:#f3ecdb; border-radius:99px; overflow:hidden}
+  .bar-row .fill{height:100%; border-radius:99px}
+  .bar-row .bv{width:52px; font-size:11.5px; color:var(--sub)}
+  .fig-cap{font-size:11px; color:var(--sub); text-align:center; margin:8px 0 14px}
+  .lvlpills{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .lvlpills .pill{font-size:11px}
+  /* 方法 */
+  .method{border:1.5px dashed #d8a0a0; border-radius:16px; padding:18px 16px; background:#fffaf3}
+  .method b.t{font-size:14px}
+  .method ol{margin:10px 0 0 18px}
+  .method li{font-size:12.5px; line-height:1.95; color:var(--sub); margin-bottom:10px; text-align:justify}
+  .method li b{color:var(--ink)}
+  .src{margin-top:22px}
+  .src h4{font-size:14px; margin-bottom:8px}
+  .src ol{margin-left:18px}
+  .src li{font-size:12px; line-height:1.9; color:var(--sub)}
+  /* 二维码 */
+  .qr-card{text-align:center; padding:26px 16px 22px}
+  .qr-frame{
+    display:inline-block; padding:14px; background:#fff; border-radius:6px;
+    border:3px solid var(--red); outline:1.5px dashed var(--red); outline-offset:5px;
+    position:relative; box-shadow:0 4px 18px rgba(164,38,44,.15)}
+  .qr-frame::before,.qr-frame::after{
+    content:"✂"; position:absolute; color:var(--red); font-size:14px; background:var(--card)}
+  .qr-frame::before{top:-11px; left:50%; transform:translateX(-50%); padding:0 6px}
+  .qr-frame::after{bottom:-11px; left:50%; transform:translateX(-50%) rotate(180deg); padding:0 6px}
+  #qrcode img,#qrcode canvas{display:block; width:180px; height:180px}
+  .qr-title{margin-top:20px; font-size:16px; font-weight:700; color:var(--red); letter-spacing:2px}
+  .qr-sub{margin-top:6px; font-size:12px; color:var(--sub); line-height:1.9}
+  .qr-feats{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:14px}
+  .qr-note{margin-top:14px; font-size:10.5px; color:#a89a7d; line-height:1.7}
+  .foot{margin-top:34px; text-align:center; font-size:10.5px; color:#a89a7d; line-height:2}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back">‹</span>
+  剪纸符号化分割
+</div>
+
+<div class="page">
+
+  <!-- ======== 头部 ======== -->
+  <div class="kicker">PAPER-CUTTING · SYMBOL SEGMENTATION</div>
+  <h1 class="serif">剪纸符号化分割图谱</h1>
+  <p class="lead">
+    以「剪纸」为中心，将剪纸作品按符号学方法分割为基础纹样、题材图式、技艺手法、
+    地域流派与传承传播五类符号单元，把锯齿纹、月牙纹、盘长纹等装饰语汇编织为关联网络，
+    并映射《非物质文化遗产资源调研摸底登记表》的门类框架，让一张剪纸可以被拆解、被查询、被再组合。
+  </p>
+  <div class="pills">
+    <div class="pill">符号来源 · <b>剪纸纹样图典与非遗申报文档</b></div>
+    <div class="pill">分割框架 · <b>符号学「纹样—图式—语义」三分法</b></div>
+    <div class="pill">生成日期 · <b>2026-10-26</b></div>
+  </div>
+
+  <hr>
+
+  <div class="stats" id="stats"></div>
+
+  <!-- ======== 01 关联网络 ======== -->
+  <div class="sec">
+    <div class="sec-head">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span class="no">01</span><h2 class="serif">符号关联网络</h2>
+      </div>
+      <div class="side">点击节点<br>查看符号解读</div>
+    </div>
+
+    <div class="card">
+      <h3>关联网络</h3>
+      <div class="cap">剪纸作品 → 符号元素 → 文化语义 的分割映射</div>
+
+      <div class="chips" id="chips"></div>
+
+      <div class="searchrow">
+        <input id="search" type="text" placeholder="搜索符号，如：锯齿纹 ⏎">
+        <button id="resetBtn">重置布局</button>
+      </div>
+
+      <div class="graph-wrap"><canvas id="graph"></canvas></div>
+      <div class="graph-hint">拖拽节点 · 滚轮缩放 · 点击节点查看符号解读</div>
+
+      <div id="detail"></div>
+    </div>
+  </div>
+
+  <!-- ======== 02 概览 × 排行 ======== -->
+  <div class="sec">
+    <div class="sec-head">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span class="no">02</span><h2 class="serif">符号概览 ×<br>热度排行</h2>
+      </div>
+      <div class="side">符号库汇总<br>（纹样 · 图式 · 技艺）</div>
+    </div>
+
+    <div class="card">
+      <h3>符号类别分布</h3>
+      <div class="cap">基于符号库的 6 个分割维度统计</div>
+      <div class="bars" id="catBars"></div>
+      <div class="fig-cap">图 2 ｜ 剪纸符号维度分布（n=<span id="catN"></span>）</div>
+      <div class="lvlpills">
+        <div class="pill"><b>国家级</b> 人类非遗代表作</div>
+        <div class="pill"><b>纹样符号</b> 14 种</div>
+        <div class="pill"><b>题材图式</b> 12 类</div>
+        <div class="pill"><b>地域流派</b> 8 支</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>符号热度排行 Top 15</h3>
+      <div class="cap">权重综合词频与中心度赋值（1—100）</div>
+      <div class="bars" id="topBars"></div>
+      <div class="fig-cap">图 3 ｜ 剪纸符号热度权重排行</div>
+    </div>
+  </div>
+
+  <!-- ======== 03 方法说明 ======== -->
+  <div class="sec">
+    <div class="sec-head">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span class="no">03</span><h2 class="serif">符号化分割方法说明</h2>
+      </div>
+    </div>
+
+    <div class="method">
+      <b class="t">符号化分割构建路径：</b>
+      <ol>
+        <li><b>纹样采集</b> —— 自剪纸纹样图典、非遗申报文档与传世作品中提取装饰语汇，
+          归纳为锯齿纹、月牙纹、圆点纹等 14 种基础纹样符号。</li>
+        <li><b>符号分割</b> —— 参照符号学「纹样—图式—语义」三元结构，将完整剪纸作品
+          切分为「基础纹样 / 题材图式 / 技艺手法 / 地域流派 / 传承传播」5 类符号单元，
+          加核心本体共 6 个分割维度。</li>
+        <li><b>语义标注</b> —— 为每个符号单元标注释义、文化寓意与常用部位，
+          如「抓髻娃娃」标注为陕北生命保护巫俗符号，「金钱纹」标注招财语义。</li>
+        <li><b>权重赋值</b> —— 节点热度（1—100）综合文献词频、图谱中心度与传承级别赋值；
+          连线强度（1—5）依据符号在同一作品中的共现关系确定。</li>
+        <li><b>关联构建</b> —— 以「剪纸」为核心节点向外辐射，符号单元之间按共现、
+          流派归属与传承关系连边，形成可交互查询的符号化分割关联网络。</li>
+      </ol>
+    </div>
+
+    <div class="src">
+      <h4 class="serif">数据来源</h4>
+      <ol>
+        <li>《中国剪纸纹样图典》与中国非物质文化遗产网「中国剪纸」名录文档
+          （2009 年入选联合国教科文组织人类非物质文化遗产代表作名录）。</li>
+        <li>《非物质文化遗产资源调研摸底登记表》门类框架，作为符号分割维度参照。</li>
+        <li>版式与交互参照用户提供的「耀州窑热词关联图」模板。</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ======== 04 扫码查询 ======== -->
+  <div class="sec">
+    <div class="sec-head">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span class="no">04</span><h2 class="serif">扫码查询</h2>
+      </div>
+    </div>
+
+    <div class="card qr-card">
+      <div class="qr-frame"><div id="qrcode"></div></div>
+      <div class="qr-title serif">扫一扫 · 查询剪纸符号</div>
+      <div class="qr-sub">
+        手机扫码进入本图谱，点击任意符号节点<br>即可查询该符号的完整信息与组成元素
+      </div>
+      <div class="qr-feats">
+        <div class="pill"><b>符号释义</b></div>
+        <div class="pill"><b>文化寓意</b></div>
+        <div class="pill"><b>常用部位</b></div>
+        <div class="pill"><b>关联符号</b></div>
+        <div class="pill"><b>热度权重</b></div>
+      </div>
+      <div class="qr-note" id="qrNote">
+        ※ 本二维码需先完成「发布到公网」（双击 发布到公网.bat）才会指向公网地址，<br>
+        届时手机在任何网络下扫码均可打开；发布前扫码无效。
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    剪纸符号化分割图谱 · PAPER-CUTTING SYMBOL SEGMENTATION GRAPH<br>
+    以刀代笔 · 以纸为媒 · 让每一个符号都可被阅读
+  </div>
+</div>
+
+<script>
+/* ================= 数据 ================= */
+const CATS = {
+  core:    {label:'核心本体', color:'#7a1f1f'},
+  symbol:  {label:'符号纹样', color:'#c8102e'},
+  theme:   {label:'题材图式', color:'#c07a2a'},
+  tech:    {label:'技艺手法', color:'#3f6b5a'},
+  region:  {label:'地域流派', color:'#4a5d8c'},
+  heritage:{label:'传承传播', color:'#8c4a6b'}
+};
+const MEAN_LABEL = {core:'文化功能', symbol:'文化寓意', theme:'文化寓意',
+  tech:'技艺特点', region:'流派特点', heritage:'价值意义'};
+
+/* [名称, 类别, 热度, 释义, 寓意/特点, 常用部位(可选)] */
+const NODE_DATA = [
+['剪纸','core',100,'以剪刀或刻刀在纸上剪刻花纹的民间美术，2006 年列入首批国家级非物质文化遗产，2009 年入选人类非遗代表作名录。','纳吉祈福、装点生活的民间视觉语言，本图谱的中心符号。'],
+
+['锯齿纹','symbol',95,'沿轮廓连续剪出三角形缺口形成的纹样，是剪纸中最基础、辨识度最高的装饰符号。','表现毛发、光芒与力量感，民间认为有驱邪之功。','动物毛发 · 花瓣边缘 · 服饰轮廓'],
+['月牙纹','symbol',88,'剪出弯曲如月牙的阴性镂空，常与锯齿纹组合出现。','象征圆满与柔美的曲线节奏。','人物面部 · 衣纹 · 花瓣'],
+['云纹','symbol',82,'卷曲舒卷的云朵轮廓纹样，由涡线组合而成。','吉祥如意、天降祥瑞。','龙凤周围 · 天空背景 · 边角填充'],
+['柳叶纹','symbol',76,'细长弯曲如柳叶的阴剪线条组合。','春意与柔美。','植物枝叶 · 毛发 · 水波'],
+['圆点纹','symbol',72,'以圆形孔洞点状分布的符号，又称「眼纹」。','点睛、生命与星象。','动物眼睛 · 花蕊 · 底纹填充'],
+['万字纹','symbol',66,'以「卍」字连续组成的吉祥几何纹。','万福万寿、绵长不断。','边框 · 服饰底纹 · 窗花骨架'],
+['盘长纹','symbol',62,'线条回环贯通、无始无终的盘曲纹样，为八宝之一。','连绵不断、家族绵延。','喜花主体 · 挂笺 · 顶棚花'],
+['水滴纹','symbol',60,'上尖下圆的水滴状镂空单元。','雨水滋润、生生不息。','火焰芯 · 花苞 · 尾羽'],
+['火纹','symbol',58,'向上跳动的火焰形镂空。','兴旺红火、驱灾辟邪。','龙身 · 太阳 · 灯花题材'],
+['涡纹','symbol',55,'螺旋回旋的曲线符号，源于原始彩陶纹样。','生命旋转、水源与宇宙循环。','动物躯干 · 水波 · 装饰中心'],
+['鱼鳞纹','symbol',52,'半圆层叠如鱼鳞的排列符号。','有余（鱼）、丰足。','鱼身 · 龙身 · 水禽羽毛'],
+['金钱纹','symbol',50,'圆形方孔铜钱形符号。','招财进宝、富贵临门。','财神题材 · 动物躯体填充'],
+['回纹','symbol',48,'横竖折绕的方形回旋几何纹。','富贵不断头。','边框 · 细纹刻纸底纹'],
+['方胜纹','symbol',45,'两菱形相叠的几何纹样。','同心双合、胜利吉祥。','喜花 · 礼花装饰'],
+
+['喜花','theme',85,'婚嫁时张贴的「囍」字及配套花鸟图式。','婚姻美满、多子多福。'],
+['生肖','theme',80,'十二种动物轮值纪年的剪纸题材，新春窗花的主角。','纪年纳福、本命护佑。'],
+['牡丹','theme',78,'花中之王的大朵花卉图式，常以满天星式构图出现。','富贵荣华。'],
+['莲花','theme',75,'剪纸中高频花卉题材，常与鱼、娃娃组合。','连生贵子、纯洁吉祥。'],
+['抓髻娃娃','theme',74,'陕北剪纸标志性人形符号，头上双髻、手举鸡（吉）。','生命保护、驱邪纳吉的巫俗遗存。'],
+['龙','theme',72,'角似鹿、鳞似鱼的神兽图式。','权威、力量与风调雨顺。'],
+['喜鹊','theme',70,'立于梅枝的吉祥鸟图式。','喜上眉梢、登门报喜。'],
+['凤','theme',70,'百鸟之王的华丽图式，婚嫁剪纸必备。','祥瑞和美、阴阳和合。'],
+['鲤鱼','theme',68,'与莲花、龙门组合的鱼类图式。','年年有余、鲤鱼跃龙门。'],
+['蝙蝠','theme',65,'以蝠谐「福」的符号化动物。','五福捧寿、福到眼前。'],
+['生命树','theme',60,'树形中轴对称图式，常缀鸟兽人物。','生命繁衍、宇宙秩序。'],
+['戏曲人物','theme',55,'取材地方戏曲场景的人物组图。','教化与娱乐并重的叙事性表达。'],
+
+['阳剪','tech',90,'保留图案线条、剪去空白的技法，线线相连。','如铁线描，明快挺拔。'],
+['阴剪','tech',86,'刻去图案线条、保留块面的技法，线线相断。','厚重饱满，如木刻版画。'],
+['折叠剪','tech',82,'将纸多次折叠后剪制，展开呈对称连续纹样。','适合团花、喜字与边饰。'],
+['阴阳混剪','tech',78,'一幅作品中阳剪与阴剪结合使用。','层次丰富、虚实相生。'],
+['刻纸','tech',75,'以刻刀在多层纸上雕镂的技艺。','精细繁复，可批量制作。'],
+['染色剪纸','tech',65,'剪刻后以品色点染的技艺，蔚县为代表。','艳丽明快、戏曲味浓。'],
+['衬色剪纸','tech',58,'以多色纸衬底的套色技艺，佛山为代表。','金碧辉煌、装饰性强。'],
+['撕纸','tech',50,'以手撕代剪的朴拙技法。','边缘毛糙、天然稚趣。'],
+
+['陕北剪纸','region',85,'黄土高原的粗犷风格，抓髻娃娃、生命树为代表符号。','古拙雄强、巫俗遗存浓厚。'],
+['蔚县剪纸','region',82,'河北蔚县，以刻代剪、点彩染色。','阴刻为主、色彩绚丽，戏曲人物见长。'],
+['乐清细纹刻纸','region',76,'浙江乐清，刀法精微。','方寸之间可刻数十根线条，被誉为剪纸中的微雕。'],
+['扬州剪纸','region',72,'江苏扬州，线条清秀流畅。','「剪花样」传统，为刺绣提供底样。'],
+['佛山剪纸','region',68,'广东佛山，铜衬、纸衬套色。','金碧辉煌，与粤剧、醒狮文化相融。'],
+['陇东剪纸','region',66,'甘肃庆阳一带。','生命树、抓髻娃娃等原始图腾符号丰富。'],
+['高密剪纸','region',64,'山东高密。','锯齿纹运用精妙，细密刚劲，与扑灰年画共生。'],
+['满族剪纸','region',62,'东北地区满族传统。','嬷嬷人、挂笺等民俗载体，质朴粗犷。'],
+
+['库淑兰','heritage',80,'陕西旬邑民间剪纸大师，被联合国教科文组织授予「民间工艺美术大师」称号。','彩贴剪纸自成体系，「剪花娘子」意象瑰丽。'],
+['高凤莲','heritage',72,'陕北延川剪纸代表性传承人。','大写意风格，生命树、抓髻娃娃气韵雄浑。'],
+['AI纹样生成','heritage',70,'以生成式 AI 辅助剪纸纹样设计与符号重组。','传统符号谱系的智能化延续，也是符号化分割数据的重要应用方向。'],
+['数字文创','heritage',68,'剪纸符号在 IP 设计、表情包、文创产品中的转化。','符号的现代转译与传播。'],
+['王老赏','heritage',65,'蔚县剪纸一代宗师，改良刻刀与点彩技艺。','其戏曲人物造型体系影响至今。'],
+['剪纸进校园','heritage',60,'非遗教育传承路径，进入中小学美育课程与社团。','培养年轻传承群体。'],
+['满族挂笺','heritage',56,'春节悬于门楣的镂空笺纸，满族剪纸典型载体。','迎新纳福、标示节气。'],
+];
+
+/* [源, 目标, 强度1-5] */
+const EDGE_DATA = [
+['剪纸','阳剪',5],['剪纸','阴剪',5],['剪纸','锯齿纹',4],['剪纸','月牙纹',4],
+['剪纸','喜花',4],['剪纸','生肖',4],['剪纸','陕北剪纸',5],['剪纸','蔚县剪纸',5],
+['剪纸','库淑兰',4],['剪纸','扬州剪纸',3],['剪纸','满族剪纸',3],['剪纸','数字文创',3],
+['剪纸','AI纹样生成',3],
+['阳剪','阴剪',4],['阳剪','阴阳混剪',4],['阴剪','阴阳混剪',4],
+['阳剪','扬州剪纸',3],['阴剪','蔚县剪纸',3],
+['折叠剪','锯齿纹',3],['折叠剪','喜花',4],['折叠剪','撕纸',2],
+['刻纸','蔚县剪纸',4],['刻纸','乐清细纹刻纸',4],['刻纸','王老赏',3],
+['锯齿纹','陕北剪纸',3],['锯齿纹','高密剪纸',3],
+['月牙纹','云纹',2],['月牙纹','水滴纹',2],['水滴纹','柳叶纹',2],['柳叶纹','莲花',2],
+['涡纹','云纹',2],['涡纹','陇东剪纸',2],
+['火纹','龙',3],['火纹','喜花',2],['云纹','龙',3],['云纹','凤',3],['云纹','扬州剪纸',2],
+['万字纹','回纹',3],['万字纹','盘长纹',3],['盘长纹','喜花',3],['盘长纹','方胜纹',2],
+['回纹','乐清细纹刻纸',3],['鱼鳞纹','鲤鱼',3],['鱼鳞纹','乐清细纹刻纸',2],
+['金钱纹','蝙蝠',2],['金钱纹','佛山剪纸',3],['金钱纹','喜花',2],
+['生肖','喜花',2],['莲花','鲤鱼',3],['莲花','生命树',2],['莲花','抓髻娃娃',2],
+['牡丹','凤',3],['牡丹','喜花',3],['喜鹊','喜花',3],['喜鹊','莲花',2],
+['蝙蝠','喜花',2],['龙','凤',4],['龙','生肖',2],['凤','生肖',2],
+['抓髻娃娃','陕北剪纸',4],['抓髻娃娃','生命树',3],['抓髻娃娃','陇东剪纸',3],['抓髻娃娃','库淑兰',3],
+['生命树','高凤莲',3],['生命树','陇东剪纸',2],
+['戏曲人物','蔚县剪纸',3],['戏曲人物','王老赏',3],['戏曲人物','满族剪纸',2],
+['喜花','方胜纹',2],
+['染色剪纸','蔚县剪纸',4],['染色剪纸','库淑兰',3],['染色剪纸','王老赏',3],
+['衬色剪纸','佛山剪纸',4],
+['高凤莲','陕北剪纸',3],['库淑兰','陕北剪纸',3],['王老赏','蔚县剪纸',4],
+['满族挂笺','满族剪纸',3],['满族挂笺','万字纹',2],
+['剪纸进校园','数字文创',2],['数字文创','AI纹样生成',3],
+];
+
+/* ================= 统计卡 ================= */
+const nodes = NODE_DATA.map((d,i)=>({
+  id:i, name:d[0], cat:d[1], w:d[2], desc:d[3], meaning:d[4], pos:d[5]||'',
+  x:(Math.random()-.5)*300, y:(Math.random()-.5)*300, vx:0, vy:0,
+  r: 8 + d[2]/100*22, visible:true, fixed:false, hi:false
+}));
+const byName = {}; nodes.forEach(n=>byName[n.name]=n);
+const edges = EDGE_DATA.map(e=>({s:byName[e[0]], t:byName[e[1]], str:e[2],
+  rest: 120 - e[2]*12}));
+byName['剪纸'].fixed = true; byName['剪纸'].x = 0; byName['剪纸'].y = 0;
+
+const cntByCat = {}; nodes.forEach(n=>cntByCat[n.cat]=(cntByCat[n.cat]||0)+1);
+document.getElementById('stats').innerHTML = [
+  [nodes.length,'符号节点'],[edges.length,'关联关系'],[Object.keys(CATS).length,'分割维度'],
+  [cntByCat.region,'地域流派（支）'],[cntByCat.symbol,'纹样符号（种）'],['2009','人类非遗入选']
+].map(s=>`<div class="stat"><div class="num">${s[0]}</div><div class="lab">${s[1]}</div></div>`).join('');
+
+/* ================= 筛选 chips ================= */
+const active = new Set(Object.keys(CATS));
+const chipsEl = document.getElementById('chips');
+Object.entries(CATS).forEach(([k,c])=>{
+  const el = document.createElement('span');
+  el.className='chip'; el.dataset.cat=k;
+  el.innerHTML=`<span class="dot" style="background:${c.color}"></span>${c.label} <span class="cnt">${cntByCat[k]}</span>`;
+  el.onclick=()=>{
+    if(active.has(k) && active.size===1) return; // 至少保留一类
+    active.has(k)?active.delete(k):active.add(k);
+    el.classList.toggle('off', !active.has(k));
+    applyFilter();
+  };
+  chipsEl.appendChild(el);
+});
+function applyFilter(){
+  nodes.forEach(n=>n.visible=active.has(n.cat));
+  alpha = Math.max(alpha, .7);
+  const sel = state.selected;
+  if(sel && !sel.visible){ selectNode(null); }
+  draw();
+}
+
+/* ================= 力导向布局 ================= */
+const canvas = document.getElementById('graph');
+const ctx = canvas.getContext('2d');
+let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
+function resize(){
+  const r = canvas.getBoundingClientRect();
+  W=r.width; H=r.height;
+  canvas.width=W*DPR; canvas.height=H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+new ResizeObserver(()=>{resize();draw();}).observe(canvas);
+resize();
+
+const state = {pan:{x:0,y:0}, k:1, selected:null, drag:null, moved:0};
+let alpha = 1;
+
+function tick(){
+  if(alpha<0.004) return;
+  const ns = nodes.filter(n=>n.visible);
+  for(let i=0;i<ns.length;i++){const a=ns[i];
+    for(let j=i+1;j<ns.length;j++){const b=ns[j];
+      let dx=b.x-a.x, dy=b.y-a.y, d2=dx*dx+dy*dy;
+      if(d2<1)d2=1; if(d2>160000)continue;
+      const d=Math.sqrt(d2), f=2400/d2*alpha;
+      dx/=d; dy/=d;
+      if(!a.fixed){a.vx-=dx*f;a.vy-=dy*f;}
+      if(!b.fixed){b.vx+=dx*f;b.vy+=dy*f;}
+    }
+  }
+  edges.forEach(e=>{
+    if(!e.s.visible||!e.t.visible)return;
+    const a=e.s,b=e.t;
+    let dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||1;
+    const f=(d-e.rest)*0.018*alpha;
+    dx/=d; dy/=d;
+    if(!a.fixed){a.vx+=dx*f;a.vy+=dy*f;}
+    if(!b.fixed){b.vx-=dx*f;b.vy-=dy*f;}
+  });
+  ns.forEach(n=>{
+    if(n.fixed)return;
+    n.vx += -n.x*0.006*alpha; n.vy += -n.y*0.006*alpha;
+    n.vx*=0.85; n.vy*=0.85; n.x+=n.vx; n.y+=n.vy;
+  });
+  alpha*=0.996;
+}
+
+/* ================= 渲染 ================= */
+function toScreen(n){ return {x:n.x*state.k + W/2 + state.pan.x, y:n.y*state.k + H/2 + state.pan.y}; }
+function toWorld(p){ return {x:(p.x - W/2 - state.pan.x)/state.k, y:(p.y - H/2 - state.pan.y)/state.k}; }
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const sel = state.selected;
+  edges.forEach(e=>{
+    if(!e.s.visible||!e.t.visible)return;
+    const a=toScreen(e.s), b=toScreen(e.t);
+    const linked = sel && (e.s===sel||e.t===sel);
+    ctx.strokeStyle = linked ? e.s.cat && CATS[e.s.cat].color : '#c9bfa8';
+    ctx.globalAlpha = linked ? .85 : (sel ? .18 : .42);
+    ctx.lineWidth = (0.6 + e.str*0.45) * state.k;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+  const t = performance.now()/400;
+  nodes.forEach(n=>{
+    if(!n.visible)return;
+    const p=toScreen(n), r=n.r*state.k, c=CATS[n.cat].color;
+    const dim = sel && sel!==n && !edges.some(e=>(e.s===sel&&e.t===n)||(e.t===sel&&e.s===n));
+    ctx.globalAlpha = dim ? .28 : 1;
+    // 搜索高亮脉冲
+    if(n.hi){
+      const pr = r + 6 + Math.sin(t)*3;
+      ctx.beginPath(); ctx.arc(p.x,p.y,pr,0,7);
+      ctx.strokeStyle=c; ctx.lineWidth=2; ctx.globalAlpha=.7; ctx.stroke(); ctx.globalAlpha=1;
+    }
+    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,7);
+    ctx.fillStyle=c; ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x,p.y,r*0.45,0,7);
+    ctx.fillStyle='rgba(255,255,255,.18)'; ctx.fill();
+    if(sel===n){
+      ctx.beginPath(); ctx.arc(p.x,p.y,r+4,0,7);
+      ctx.strokeStyle=c; ctx.lineWidth=2.5; ctx.stroke();
+    }
+    // 标签
+    const fs = Math.max(10, 11.5*Math.sqrt(state.k));
+    ctx.font = `${n.cat==='core'?'700':'500'} ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillStyle = dim ? '#b3a98f' : '#3a332a';
+    ctx.fillText(n.name, p.x, p.y + r + 3);
+    ctx.globalAlpha = 1;
+  });
+}
+function loop(){ tick(); draw(); requestAnimationFrame(loop); }
+loop();
+
+/* ================= 交互 ================= */
+let pointers = new Map(), lastPinch = 0;
+canvas.addEventListener('pointerdown', e=>{
+  canvas.setPointerCapture(e.pointerId);
+  const p={x:e.offsetX,y:e.offsetY};
+  pointers.set(e.pointerId,p);
+  state.moved=0;
+  if(pointers.size===1){
+    const w=toWorld(p);
+    state.drag = nodes.find(n=>n.visible && Math.hypot(n.x-w.x,n.y-w.y) < n.r+6) || 'pan';
+    state.dragStart = p; state.panStart = {...state.pan};
+    if(state.drag!=='pan'){ state.drag.fixed=true; }
+  }
+  lastPinch = 0;
+});
+canvas.addEventListener('pointermove', e=>{
+  if(!pointers.has(e.pointerId))return;
+  const p={x:e.offsetX,y:e.offsetY};
+  const prev=pointers.get(e.pointerId);
+  state.moved += Math.hypot(p.x-prev.x,p.y-prev.y);
+  pointers.set(e.pointerId,p);
+  if(pointers.size===2){
+    const [a,b]=[...pointers.values()];
+    const d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(lastPinch){ zoomAt({x:(a.x+b.x)/2,y:(a.y+b.y)/2}, d/lastPinch); }
+    lastPinch=d; return;
+  }
+  if(state.drag==='pan'){
+    state.pan.x = state.panStart.x + p.x - state.dragStart.x;
+    state.pan.y = state.panStart.y + p.y - state.dragStart.y;
+  }else if(state.drag){
+    const w=toWorld(p); state.drag.x=w.x; state.drag.y=w.y;
+    state.drag.vx=state.drag.vy=0;
+    alpha=Math.max(alpha,.15);
+  }
+});
+canvas.addEventListener('pointerup', e=>{
+  const p={x:e.offsetX,y:e.offsetY};
+  pointers.delete(e.pointerId);
+  if(state.drag && state.drag!=='pan'){
+    if(state.drag.cat!=='core') state.drag.fixed=false;
+    if(state.moved<5){
+      const w=toWorld(p);
+      const hit = nodes.find(n=>n.visible && Math.hypot(n.x-w.x,n.y-w.y) < n.r+6);
+      if(hit===state.drag) selectNode(hit===state.selected?null:hit);
+    }
+    state.drag=null;
+  } else if(state.drag==='pan' && state.moved<5){
+    selectNode(null);
+  }
+  state.drag=null;
+});
+canvas.addEventListener('pointercancel', e=>{ pointers.delete(e.pointerId); state.drag=null; });
+canvas.addEventListener('wheel', e=>{
+  e.preventDefault();
+  zoomAt({x:e.offsetX,y:e.offsetY}, Math.exp(-e.deltaY*0.0012));
+},{passive:false});
+function zoomAt(p, f){
+  const k0=state.k, k1=Math.min(2.6, Math.max(0.35, k0*f));
+  const w=toWorld(p);
+  state.k=k1;
+  state.pan.x = p.x - w.x*k1 - W/2;
+  state.pan.y = p.y - w.y*k1 - H/2;
+}
+
+document.getElementById('resetBtn').onclick=()=>{
+  nodes.forEach(n=>{
+    if(n.cat!=='core'){ n.x=(Math.random()-.5)*320; n.y=(Math.random()-.5)*320; n.fixed=false; }
+    n.hi=false;
+  });
+  state.pan={x:0,y:0}; state.k=1; state.selected=null;
+  document.getElementById('search').value='';
+  selectNode(null); alpha=1;
+};
+
+/* 搜索 */
+document.getElementById('search').addEventListener('input', e=>{
+  const q=e.target.value.trim();
+  nodes.forEach(n=>n.hi=false);
+  if(!q){ draw(); return; }
+  const hits = nodes.filter(n=>n.visible && n.name.includes(q));
+  hits.forEach(n=>n.hi=true);
+  if(hits.length===1){ selectNode(hits[0]); }
+});
+document.getElementById('search').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    const q=e.target.value.trim();
+    const hit=nodes.find(n=>n.visible && n.name.includes(q));
+    if(hit) selectNode(hit);
+  }
+});
+
+/* ================= 详情面板 ================= */
+const detailEl = document.getElementById('detail');
+function selectNode(n){
+  state.selected=n;
+  if(!n){ detailEl.className=''; detailEl.innerHTML=''; return; }
+  const c=CATS[n.cat];
+  const rel = edges.filter(e=>e.s===n||e.t===n)
+    .map(e=>e.s===n?e.t:e.s).filter(x=>x.visible);
+  detailEl.innerHTML = `
+    <div class="d-head">
+      <span class="d-name serif">${n.name}</span>
+      <span class="d-cat" style="background:${c.color}">${c.label}</span>
+      <span class="d-w">热度 ${n.w}</span>
+    </div>
+    <div class="wbar"><i style="width:${n.w}%"></i></div>
+    <div class="row"><b>符号释义</b>｜${n.desc}</div>
+    <div class="row"><b>${MEAN_LABEL[n.cat]}</b>｜${n.meaning}</div>
+    ${n.pos?`<div class="row"><b>常用部位</b>｜${n.pos}</div>`:''}
+    <div class="row" style="margin-bottom:6px"><b>关联符号</b>（${rel.length}）</div>
+    <div class="rel">${rel.map(x=>`<span data-n="${x.name}">${x.name}</span>`).join('')||'<span style="border:none;background:none;color:var(--sub)">当前维度下无关联</span>'}</div>
+  `;
+  detailEl.className='show';
+  detailEl.querySelectorAll('.rel span[data-n]').forEach(el=>{
+    el.onclick=()=>{ const t=byName[el.dataset.n]; if(t) selectNode(t); };
+  });
+}
+selectNode(byName['剪纸']);
+
+/* ================= 类别分布 ================= */
+document.getElementById('catN').textContent = nodes.length;
+const maxCnt = Math.max(...Object.values(cntByCat));
+document.getElementById('catBars').innerHTML =
+  Object.entries(CATS).filter(([k])=>k!=='core').map(([k,c])=>`
+  <div class="bar-row">
+    <span class="bl">${c.label}</span>
+    <span class="track"><span class="fill" style="width:${cntByCat[k]/maxCnt*100}%;background:${c.color}"></span></span>
+    <span class="bv">${cntByCat[k]} 个</span>
+  </div>`).join('');
+
+/* ================= 热度 Top15 ================= */
+const top15=[...nodes].sort((a,b)=>b.w-a.w).slice(0,15);
+document.getElementById('topBars').innerHTML = top15.map(n=>`
+  <div class="bar-row">
+    <span class="bl">${n.name}</span>
+    <span class="track"><span class="fill" style="width:${n.w}%;background:linear-gradient(90deg,var(--red),var(--brown))"></span></span>
+    <span class="bv">${n.w}</span>
+  </div>`).join('');
+
+/* 二维码逻辑：本地/局域网打开时显示 qrcode.png（公网二维码）；
+   公网托管访问时说明当前已在手机端 */
+(function(){
+  const el=document.getElementById('qrcode');
+  const h=location.hostname;
+  const isLocal = !h || h==='localhost' || h==='127.0.0.1'
+    || /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h);
+  if(isLocal){
+    el.innerHTML='<img src="qrcode-公网.png" alt="扫码查询二维码" style="width:180px;height:180px;display:block">';
+  }else{
+    el.innerHTML='<div style="width:180px;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--red)">'
+      +'<div style="font-size:40px">✓</div>'
+      +'<div style="font-size:12px;line-height:1.8;color:var(--sub);padding:0 14px;text-align:center">您已通过扫码进入本页<br>可点击上方任意符号节点开始查询</div></div>';
+  }
+})();
+</script>
+</body>
+</html>
