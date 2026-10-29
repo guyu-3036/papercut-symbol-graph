@@ -847,4 +847,22 @@ function playScan(){
 }
 document.getElementById('zReplay').onclick=playScan;
 
+/* 二维码逻辑：本地/局域网打开时显示 qrcode.png；公网访问时提示手机端 */
+(function(){
+  const el=document.getElementById('qrcode');
+  const h=location.hostname;
+  const isLocal = !h || h==='localhost' || h==='127.0.0.1'
+    || /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h);
+  if(isLocal){
+    el.innerHTML='<img src="qrcode.png" alt="扫码查询" style="width:180px;height:180px;display:block">';
+  }else{
+    el.innerHTML='<div style="width:180px;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--red)">'
+      +'<div style="font-size:40px">✓</div>'
+      +'<div style="font-size:12px;line-height:1.8;color:var(--sub);padding:0 14px;text-align:center">您已通过扫码进入本页<br>可点击上方任意符号节点开始查询</div></div>';
+  }
+})();
+</script>
+</body>
+</html>
+
 
