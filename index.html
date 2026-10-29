@@ -115,6 +115,41 @@
   .src h4{font-size:14px; margin-bottom:8px}
   .src ol{margin-left:18px}
   .src li{font-size:12px; line-height:1.9; color:var(--sub)}
+  /* 生肖分割实景 */
+  .z-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .z-cell{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px 4px 7px;text-align:center;cursor:pointer;transition:.15s}
+  .z-cell svg{display:block;width:100%;aspect-ratio:1}
+  .z-cell .zn{font-size:11.5px;font-weight:600;margin-top:3px}
+  .z-cell .zc{font-size:9.5px;color:var(--sub)}
+  .z-cell.on{border-color:var(--red);box-shadow:0 0 0 2px rgba(200,16,46,.14)}
+  .z-view{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px;animation:fade .25s ease}
+  .zv-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .zv-name{font-size:17px;font-weight:700}
+  .zv-tag{font-size:10px;color:#fff;background:var(--red);border-radius:999px;padding:3px 9px}
+  .z-stage{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  .z-stage svg{display:block;width:100%;aspect-ratio:1}
+  .z-box{position:absolute;border:1.6px solid;border-radius:3px;opacity:0;transform:scale(.85);
+    transition:opacity .3s,transform .3s;pointer-events:none}
+  .z-box.show{opacity:1;transform:none}
+  .z-box.dim{opacity:.14}
+  .z-box .zl{position:absolute;top:-1px;left:-1px;font-size:8.5px;line-height:1;color:#fff;
+    padding:2px 4px;border-radius:2px 0 2px 0;white-space:nowrap}
+  .z-scan{position:absolute;left:0;right:0;top:-4px;height:3px;display:none;
+    background:linear-gradient(90deg,transparent,var(--red2),transparent);box-shadow:0 0 10px var(--red2)}
+  .zv-actions{display:flex;align-items:center;gap:10px;margin:10px 0 2px}
+  .zbtn{border:1px solid var(--red);color:var(--red);background:#fff;border-radius:999px;
+    padding:7px 14px;font-size:12px;cursor:pointer}
+  .zbtn:active{background:#fbeef0}
+  .zv-note{font-size:10px;color:#a89a7d;line-height:1.5}
+  .z-syms{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .z-sym{font-size:10.5px;border:1px solid #d9cdb4;border-radius:999px;padding:3px 9px;
+    background:#fbf7ec;cursor:pointer;user-select:none}
+  .z-sym b{font-weight:600}
+  .z-sym .cf{color:var(--red);font-weight:600}
+  .z-sym i{font-style:normal;margin-left:3px;color:var(--red);font-weight:700}
+  .z-sym.off{opacity:.35}
+  .z-mean{font-size:12px;line-height:1.9;color:var(--sub);margin-top:10px;text-align:justify}
+  .z-mean b{color:var(--ink)}
   /* 二维码 */
   .qr-card{text-align:center; padding:26px 16px 22px}
   .qr-frame{
@@ -153,6 +188,7 @@
   <div class="pills">
     <div class="pill">符号来源 · <b>剪纸纹样图典与非遗申报文档</b></div>
     <div class="pill">分割框架 · <b>符号学「纹样—图式—语义」三分法</b></div>
+    <div class="pill">分割样例 · <b>安塞十二生肖</b></div>
     <div class="pill">生成日期 · <b>2026-10-26</b></div>
   </div>
 
@@ -187,11 +223,46 @@
     </div>
   </div>
 
-  <!-- ======== 02 概览 × 排行 ======== -->
+  <!-- ======== 02 安塞十二生肖分割实景 ======== -->
   <div class="sec">
     <div class="sec-head">
       <div style="display:flex;align-items:baseline;gap:10px">
-        <span class="no">02</span><h2 class="serif">符号概览 ×<br>热度排行</h2>
+        <span class="no">02</span><h2 class="serif">安塞十二生肖 ·<br>符号分割实景</h2>
+      </div>
+      <div class="side">点作品<br>运行符号检测</div>
+    </div>
+
+    <div class="card">
+      <h3>十二生肖检测样例</h3>
+      <div class="cap">仿目标检测可视化：框选符号单元，标注纹样类别与置信度（作品依据安塞剪纸风格由符号库程序化重绘）</div>
+
+      <div class="z-grid" id="zGrid"></div>
+
+      <div class="z-view" id="zView" style="display:none">
+        <div class="zv-head">
+          <span class="zv-name serif" id="zvName"></span>
+          <span class="zv-tag" id="zvTag"></span>
+        </div>
+        <div class="z-stage" id="zStage">
+          <div id="zArt"></div>
+          <div class="z-scan" id="zScan"></div>
+        </div>
+        <div class="zv-actions">
+          <button class="zbtn" id="zReplay">▶ 重新分割演示</button>
+          <span class="zv-note">点符号名显示/隐藏检测框<br>点 ↗ 在关联网络中定位该符号</span>
+        </div>
+        <div class="z-syms" id="zSyms"></div>
+        <div class="z-mean" id="zMean"></div>
+      </div>
+    </div>
+    <div class="fig-cap">图 2 ｜ 安塞十二生肖剪纸符号化分割检测（点击生肖运行演示）</div>
+  </div>
+
+  <!-- ======== 03 概览 × 排行 ======== -->
+  <div class="sec">
+    <div class="sec-head">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span class="no">03</span><h2 class="serif">符号概览 ×<br>热度排行</h2>
       </div>
       <div class="side">符号库汇总<br>（纹样 · 图式 · 技艺）</div>
     </div>
@@ -200,7 +271,7 @@
       <h3>符号类别分布</h3>
       <div class="cap">基于符号库的 6 个分割维度统计</div>
       <div class="bars" id="catBars"></div>
-      <div class="fig-cap">图 2 ｜ 剪纸符号维度分布（n=<span id="catN"></span>）</div>
+      <div class="fig-cap">图 3 ｜ 剪纸符号维度分布（n=<span id="catN"></span>）</div>
       <div class="lvlpills">
         <div class="pill"><b>国家级</b> 人类非遗代表作</div>
         <div class="pill"><b>纹样符号</b> 14 种</div>
@@ -213,15 +284,15 @@
       <h3>符号热度排行 Top 15</h3>
       <div class="cap">权重综合词频与中心度赋值（1—100）</div>
       <div class="bars" id="topBars"></div>
-      <div class="fig-cap">图 3 ｜ 剪纸符号热度权重排行</div>
+      <div class="fig-cap">图 4 ｜ 剪纸符号热度权重排行</div>
     </div>
   </div>
 
-  <!-- ======== 03 方法说明 ======== -->
+  <!-- ======== 04 方法说明 ======== -->
   <div class="sec">
     <div class="sec-head">
       <div style="display:flex;align-items:baseline;gap:10px">
-        <span class="no">03</span><h2 class="serif">符号化分割方法说明</h2>
+        <span class="no">04</span><h2 class="serif">符号化分割方法说明</h2>
       </div>
     </div>
 
@@ -248,16 +319,17 @@
         <li>《中国剪纸纹样图典》与中国非物质文化遗产网「中国剪纸」名录文档
           （2009 年入选联合国教科文组织人类非物质文化遗产代表作名录）。</li>
         <li>《非物质文化遗产资源调研摸底登记表》门类框架，作为符号分割维度参照。</li>
-        <li>版式与交互参照用户提供的「耀州窑热词关联图」模板。</li>
+        <li>版式与交互参照用户提供的「耀州窑热词关联图」模板；安塞十二生肖分割样例图形
+          依据安塞剪纸造型特征与符号库程序化重绘，检测框为符号标注演示数据。</li>
       </ol>
     </div>
   </div>
 
-  <!-- ======== 04 扫码查询 ======== -->
+  <!-- ======== 05 扫码查询 ======== -->
   <div class="sec">
     <div class="sec-head">
       <div style="display:flex;align-items:baseline;gap:10px">
-        <span class="no">04</span><h2 class="serif">扫码查询</h2>
+        <span class="no">05</span><h2 class="serif">扫码查询</h2>
       </div>
     </div>
 
@@ -272,7 +344,7 @@
         <div class="pill"><b>文化寓意</b></div>
         <div class="pill"><b>常用部位</b></div>
         <div class="pill"><b>关联符号</b></div>
-        <div class="pill"><b>热度权重</b></div>
+        <div class="pill"><b>生肖分割</b></div>
       </div>
       <div class="qr-note" id="qrNote">
         ※ 手机扫码即可打开本页（公网地址，5G 或任意 Wi-Fi 均可访问）。<br>
@@ -390,6 +462,190 @@ const EDGE_DATA = [
 ['剪纸进校园','数字文创',2],['数字文创','AI纹样生成',3],
 ];
 
+/* ================= 安塞十二生肖 · 剪纸图形与符号检测 ================= */
+const ZR='#c8102e', ZD='#a4262c', ZC='#fffdf8';
+const r1=n=>Math.round(n*10)/10;
+function zig(x1,y1,x2,y2,n,h,f=ZR){          /* 锯齿纹带 */
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+  let d=`M${r1(x1)} ${r1(y1)}`;
+  for(let i=1;i<=n;i++){
+    d+=` L${r1(x1+dx*(i-.5)/n+nx*h)} ${r1(y1+dy*(i-.5)/n+ny*h)} L${r1(x1+dx*i/n)} ${r1(y1+dy*i/n)}`;
+  }
+  return `<path d="${d}Z" fill="${f}"/>`;
+}
+const cres=(cx,cy,rr,rot=0,f=ZC)=>`<path d="M${r1(cx-rr)} ${r1(cy)} A${r1(rr)} ${r1(rr)} 0 1 1 ${r1(cx+rr)} ${r1(cy)} A${r1(rr*.6)} ${r1(rr*.6)} 0 1 0 ${r1(cx-rr)} ${r1(cy)} Z" transform="rotate(${rot} ${cx} ${cy})" fill="${f}"/>`;
+const dot=(cx,cy,rr,f=ZC)=>`<circle cx="${cx}" cy="${cy}" r="${rr}" fill="${f}"/>`;
+const drop=(cx,cy,rr,rot=0,f=ZC)=>`<path d="M${r1(cx)} ${r1(cy-rr)} C${r1(cx+rr*.95)} ${r1(cy-rr*.35)} ${r1(cx+rr*.6)} ${r1(cy+rr*.75)} ${r1(cx)} ${r1(cy+rr)} C${r1(cx-rr*.6)} ${r1(cy+rr*.75)} ${r1(cx-rr*.95)} ${r1(cy-rr*.35)} ${r1(cx)} ${r1(cy-rr)} Z" transform="rotate(${rot} ${cx} ${cy})" fill="${f}"/>`;
+const swirl=(cx,cy,rr,f=ZR,w=7)=>`<path d="M${r1(cx-rr)} ${r1(cy)} A${r1(rr)} ${r1(rr)} 0 1 1 ${r1(cx+rr)} ${r1(cy)} A${r1(rr*.7)} ${r1(rr*.7)} 0 1 1 ${r1(cx-rr*.4)} ${r1(cy)}" fill="none" stroke="${f}" stroke-width="${w}" stroke-linecap="round"/>`;
+const st=(d,w=8,f=ZR)=>`<path d="${d}" fill="none" stroke="${f}" stroke-width="${w}" stroke-linecap="round"/>`;
+function flower(cx,cy,rr,n=6,f=ZC){let s='';for(let i=0;i<n;i++)s+=drop(cx,cy,rr,i*360/n,f);return s+dot(cx,cy,rr*.42,ZR);}
+
+/* 生肖剪纸：依据安塞造型特征程序化重绘（阴剪镂空 + 阳剪轮廓 + 锯齿装饰） */
+const ZART={
+鼠:()=>[
+  st('M170 150 Q212 138 205 102 Q200 76 176 82',9),
+  '<path d="M52 92 Q56 62 84 56 Q122 44 150 66 Q176 88 170 126 Q166 158 136 172 Q100 186 74 168 Q54 152 52 118 Z" fill="'+ZR+'"/>',
+  dot(140,54,26,ZR),cres(140,54,15,-28),
+  zig(86,54,150,64,7,10),
+  cres(88,94,10,-18),dot(58,98,4,ZD),
+  drop(122,122,14,90),dot(98,142,7),cres(142,142,10,175),
+  st('M60 168 Q66 178 78 182',6)
+].join(''),
+牛:()=>[
+  cres(58,56,32,42),cres(162,56,32,-42),
+  drop(34,88,15,75,ZR),drop(186,88,15,-75,ZR),
+  '<path d="M62 52 Q110 40 158 52 Q170 96 152 138 Q110 158 68 138 Q50 96 62 52 Z" fill="'+ZR+'"/>',
+  '<path d="M64 152 Q110 142 156 152 L162 192 Q110 208 58 192 Z" fill="'+ZR+'"/>',
+  zig(60,190,160,190,10,13),
+  swirl(110,76,13,ZC,5),
+  dot(84,102,9),dot(136,102,9),dot(84,102,4,ZR),dot(136,102,4,ZR),
+  st('M92 120 Q110 128 128 120',4,ZC),
+  dot(94,132,5.5),dot(126,132,5.5),
+  drop(96,170,9),drop(124,170,9)
+].join(''),
+虎:()=>[
+  dot(58,44,22,ZR),dot(162,44,22,ZR),cres(58,44,12,178),cres(162,44,12,178),
+  '<path d="M42 84 Q42 34 110 34 Q178 34 178 84 Q178 132 148 156 Q110 178 72 156 Q42 132 42 84 Z" fill="'+ZR+'"/>',
+  zig(38,100,52,152,5,12),zig(182,100,168,152,5,12),
+  st('M96 62 L124 62',5,ZC),st('M92 74 L128 74',5,ZC),st('M96 86 L124 86',5,ZC),st('M110 58 L110 90',5,ZC),
+  cres(78,88,13,22),cres(142,88,13,-22),
+  dot(80,104,10),dot(140,104,10),dot(80,104,4.5,ZR),dot(140,104,4.5,ZR),
+  drop(110,122,10,178),
+  st('M76 138 Q110 148 144 138',4,ZC),
+  zig(76,140,144,140,7,13,ZC),
+  '<path d="M64 158 Q110 184 156 158 L162 196 Q110 212 58 196 Z" fill="'+ZR+'"/>',
+  drop(96,178,10),drop(124,178,10)
+].join(''),
+兔:()=>[
+  '<ellipse cx="98" cy="52" rx="13" ry="34" transform="rotate(14 98 52)" fill="'+ZR+'"/>',
+  '<ellipse cx="98" cy="56" rx="6" ry="22" transform="rotate(14 98 56)" fill="'+ZC+'"/>',
+  '<ellipse cx="128" cy="58" rx="12" ry="30" transform="rotate(36 128 58)" fill="'+ZR+'"/>',
+  '<ellipse cx="128" cy="61" rx="5.5" ry="19" transform="rotate(36 128 61)" fill="'+ZC+'"/>',
+  dot(84,106,30,ZR),cres(76,102,9,-18),dot(58,112,3.5,ZD),
+  '<path d="M64 122 Q52 168 96 178 Q150 190 168 156 Q184 122 150 108 Q110 96 84 112 Z" fill="'+ZR+'"/>',
+  dot(172,152,15,ZR),zig(160,142,184,162,4,8),
+  cres(122,140,12,90),drop(148,132,9,24),dot(98,152,6),
+  '<ellipse cx="106" cy="184" rx="17" ry="8" fill="'+ZR+'"/>'
+].join(''),
+龙:()=>[
+  swirl(62,162,11,ZR,5),swirl(160,58,10,ZR,5),
+  st('M36 128 Q70 96 108 118 Q146 140 178 112',16),
+  zig(42,112,86,94,4,11),zig(118,134,172,106,5,11),
+  cres(80,110,9,20),cres(112,124,9,20),cres(146,126,9,15),
+  '<path d="M166 92 L204 100 Q210 118 196 130 L166 128 Z" fill="'+ZR+'"/>',
+  cres(178,90,12,-55,ZR),cres(192,92,12,-70,ZR),
+  drop(208,112,9,90,ZR),
+  dot(186,108,5.5),dot(186,108,2.5,ZR),
+  st('M172 127 L198 125',4,ZC),zig(172,127,198,127,3,6,ZC),
+  zig(28,118,46,138,4,10),swirl(34,134,9,ZR,5)
+].join(''),
+蛇:()=>[
+  st('M110 62 Q160 62 160 110 Q160 158 110 158 Q68 158 68 116 Q68 82 106 82 Q136 82 136 112 Q136 134 112 134',13),
+  dot(110,62,16,ZR),dot(104,57,3.5),dot(116,57,3.5),
+  st('M110 46 L110 34',3,ZD),st('M110 34 L104 28',3,ZD),st('M110 34 L116 28',3,ZD),
+  dot(160,110,4),dot(110,158,4),dot(68,116,4),dot(136,112,4),
+  zig(104,134,122,134,3,7)
+].join(''),
+马:()=>[
+  st('M92 150 L86 190',9),st('M122 154 L122 192',9),st('M152 150 L162 188',9),st('M72 146 L62 186',9),
+  '<path d="M56 110 Q60 86 94 82 Q152 74 174 104 Q188 122 172 142 Q148 162 98 158 Q62 152 56 128 Z" fill="'+ZR+'"/>',
+  '<path d="M58 102 Q62 76 84 66 L98 76 Q82 88 76 108 Z" fill="'+ZR+'"/>',
+  '<ellipse cx="66" cy="84" rx="19" ry="13" transform="rotate(-24 66 84)" fill="'+ZR+'"/>',
+  drop(48,92,8,80,ZR),drop(86,64,8,32,ZR),
+  zig(88,62,58,94,5,10),
+  cres(62,82,6,-28),
+  swirl(182,118,15,ZR,8),zig(170,100,190,134,4,9),
+  cres(118,118,13),drop(118,118,6,ZR)
+].join(''),
+羊:()=>[
+  swirl(62,54,19,ZR,8),swirl(158,54,19,ZR,8),
+  drop(38,80,14,78,ZR),drop(182,80,14,-78,ZR),
+  dot(80,50,10,ZR),dot(100,44,11,ZR),dot(120,44,11,ZR),dot(140,50,10,ZR),
+  '<path d="M70 54 Q110 44 150 54 Q160 96 142 130 Q110 146 78 130 Q60 96 70 54 Z" fill="'+ZR+'"/>',
+  cres(88,88,9,-14),cres(132,88,9,14),
+  dot(110,118,6.5),st('M98 130 Q110 136 122 130',4,ZC),
+  zig(100,148,120,148,4,10),
+  '<path d="M62 154 Q110 138 158 154 L164 196 Q110 212 56 196 Z" fill="'+ZR+'"/>',
+  cres(88,174,10),cres(132,174,10),dot(110,190,6)
+].join(''),
+猴:()=>[
+  st('M84 104 L60 72',8),
+  drop(54,58,16,0,ZR),cres(54,58,9,0),drop(66,46,7,55,ZD),
+  st('M152 138 Q196 130 192 92 Q189 66 166 70',8),
+  dot(96,76,26,ZR),dot(72,68,9,ZR),dot(120,68,9,ZR),
+  dot(88,72,8),dot(106,72,8),dot(88,72,3,ZR),dot(106,72,3,ZR),
+  cres(97,88,7,176),
+  '<path d="M76 98 Q66 140 92 152 Q130 166 152 142 Q166 120 140 104 Q112 90 76 98 Z" fill="'+ZR+'"/>',
+  st('M98 152 L94 190',9),st('M132 150 L138 188',9),
+  cres(116,124,11,90)
+].join(''),
+鸡:()=>[
+  st('M158 96 Q204 62 196 22',10),st('M164 108 Q214 86 212 44',10),st('M170 122 Q222 110 224 68',10),
+  dot(116,120,50,ZR),
+  cres(118,118,21,90),cres(118,118,12,90,ZR),
+  flower(96,130,8,6),
+  dot(72,76,18,ZR),
+  zig(56,58,88,56,3,10),
+  '<path d="M54 72 L34 79 L54 86 Z" fill="'+ZR+'"/>',
+  drop(62,94,7,176,ZD),dot(68,70,4),
+  st('M104 166 L100 194',6),st('M128 162 L132 194',6),
+  st('M92 194 L108 194',5),st('M124 194 L140 194',5)
+].join(''),
+狗:()=>[
+  st('M78 164 L74 196',9),
+  dot(140,152,26,ZR),
+  '<path d="M64 100 Q54 148 96 166 Q142 184 168 156 Q182 136 164 116 Q138 92 96 98 Z" fill="'+ZR+'"/>',
+  dot(74,72,26,ZR),drop(92,48,12,38,ZR),
+  dot(52,84,12,ZR),dot(43,81,4,ZD),
+  cres(70,66,7,-18),
+  dot(58,104,6,ZD),'<rect x="55" y="101" width="6" height="6" fill="'+ZC+'"/>',
+  swirl(170,108,14,ZR,8),
+  cres(112,132,12,90),drop(136,128,8,30)
+].join(''),
+猪:()=>[
+  '<path d="M74 46 L96 64 L70 76 Z" fill="'+ZR+'"/>',
+  '<path d="M146 46 L124 64 L150 76 Z" fill="'+ZR+'"/>',
+  st('M84 188 L84 204',9),st('M136 188 L136 204',9),
+  '<path d="M60 128 Q50 178 96 186 Q110 190 124 186 Q170 178 162 128 Q110 114 60 128 Z" fill="'+ZR+'"/>',
+  dot(110,90,44,ZR),
+  cres(90,76,8,-14),cres(130,76,8,14),
+  '<ellipse cx="110" cy="100" rx="18" ry="13" fill="'+ZD+'"/>',
+  dot(103,100,3.5),dot(117,100,3.5),
+  cres(110,118,8,176),
+  swirl(72,106,8,ZC,4),swirl(148,106,8,ZC,4),
+  flower(110,154,10,6),swirl(164,142,10,ZR,6)
+].join('')
+};
+
+/* 检测标注：[符号名, 置信度, x%, y%, w%, h%]（演示数据） */
+const ZODIAC=[
+{tag:'子鼠',mean:'灵鼠纳子，多子多福、机敏聪慧，安塞窑洞顶棚花的常客。',tech:['阳剪','阴剪'],art:ZART['鼠'](),
+ det:[['月牙纹',.88,28,34,22,16],['锯齿纹',.82,34,20,40,14],['水滴纹',.74,48,50,20,24],['圆点纹',.68,38,60,16,14],['柳叶纹',.61,74,34,26,30]]},
+{tag:'丑牛',mean:'春耕纳福、勤勉致富，牛身上多饰牡丹棉花，寓意富贵荣发。',tech:['阴阳混剪'],art:ZART['牛'](),
+ det:[['月牙纹',.90,12,12,32,24],['涡纹',.83,44,28,14,18],['圆点纹',.80,30,40,42,16],['锯齿纹',.66,26,78,50,14],['水滴纹',.58,6,32,18,14]]},
+{tag:'寅虎',mean:'驱邪镇宅、护生庇佑，安塞「艾虎」端午张贴，是最具代表性的生肖。',tech:['阴剪','锯齿推剪'],art:ZART['虎'](),
+ det:[['锯齿纹',.93,24,58,54,22],['月牙纹',.87,28,32,46,14],['圆点纹',.85,28,42,44,14],['云纹',.72,18,12,64,16],['水滴纹',.63,46,52,14,12]]},
+{tag:'卯兔',mean:'玉兔呈祥；安塞经典「蛇盘兔」，民谚「蛇盘兔，必定富」。',tech:['阳剪','折叠剪'],art:ZART['兔'](),
+ det:[['柳叶纹',.90,34,4,36,32],['月牙纹',.84,24,40,18,14],['水滴纹',.70,70,58,22,20],['圆点纹',.62,38,62,16,14],['锯齿纹',.57,32,50,32,14]]},
+{tag:'辰龙',mean:'风调雨顺、龙腾吉祥，祈雨安塞剪纸中的主神图式。',tech:['阴阳混剪'],art:ZART['龙'](),
+ det:[['锯齿纹',.91,14,38,66,24],['鱼鳞纹',.85,30,48,42,18],['云纹',.80,20,66,26,20],['月牙纹',.68,72,34,22,14],['火纹',.60,84,44,14,20]]},
+{tag:'巳蛇',mean:'灵蛇盘绕、生生不息，蛇为「小龙」，主家宅安宁。',tech:['阴剪'],art:ZART['蛇'](),
+ det:[['涡纹',.92,24,24,54,54],['圆点纹',.74,36,42,32,30],['柳叶纹',.63,44,8,16,18],['月牙纹',.55,42,20,18,12]]},
+{tag:'午马',mean:'马到成功、龙马精神，安塞奔马常驮「聚宝盆」。',tech:['阳剪','锯齿推剪'],art:ZART['马'](),
+ det:[['锯齿纹',.89,16,20,34,28],['涡纹',.78,72,42,24,28],['月牙纹',.72,22,32,14,12],['水滴纹',.66,44,46,24,22],['柳叶纹',.58,26,72,44,20]]},
+{tag:'未羊',mean:'三阳开泰、吉祥美好，「羊」通「祥」，古文字同源。',tech:['阳剪','阴剪'],art:ZART['羊'](),
+ det:[['涡纹',.90,14,14,32,24],['月牙纹',.82,32,36,38,14],['锯齿纹',.69,42,60,18,14],['圆点纹',.61,26,12,50,12],['水滴纹',.55,8,28,16,14]]},
+{tag:'申猴',mean:'灵猴献寿、辈辈封侯，猴抱桃是祝寿窗花经典。',tech:['阴阳混剪'],art:ZART['猴'](),
+ det:[['圆点纹',.86,32,26,32,22],['水滴纹',.78,14,16,22,26],['涡纹',.70,64,32,30,32],['月牙纹',.62,38,38,18,10],['柳叶纹',.54,20,32,24,24]]},
+{tag:'酉鸡',mean:'金鸡报晓、大吉大利，「鸡」谐「吉」，婚嫁喜花常用。',tech:['阴剪','锯齿推剪'],art:ZART['鸡'](),
+ det:[['锯齿纹',.88,60,4,38,40],['月牙纹',.80,42,46,28,22],['水滴纹',.72,22,20,26,12],['圆点纹',.65,36,54,20,18],['柳叶纹',.58,34,74,26,18]]},
+{tag:'戌狗',mean:'义犬守家、平安忠信，颈悬铜铃，寓意驱邪护院。',tech:['阳剪','阴剪'],art:ZART['狗'](),
+ det:[['月牙纹',.87,26,26,16,12],['涡纹',.79,68,38,26,26],['水滴纹',.71,38,14,20,18],['圆点纹',.64,20,42,14,12],['锯齿纹',.56,38,54,34,16]]},
+{tag:'亥猪',mean:'肥猪拱门、诸事（猪）顺利，背上饰牡丹寓意富贵。',tech:['阴剪'],art:ZART['猪'](),
+ det:[['圆点纹',.85,40,40,22,14],['月牙纹',.81,30,26,42,14],['涡纹',.72,24,44,54,12],['水滴纹',.60,44,62,20,18],['锯齿纹',.52,26,84,46,12]]}
+];
+const ZDET_TOTAL=ZODIAC.reduce((s,z)=>s+z.det.length,0);
+
 /* ================= 统计卡 ================= */
 const nodes = NODE_DATA.map((d,i)=>({
   id:i, name:d[0], cat:d[1], w:d[2], desc:d[3], meaning:d[4], pos:d[5]||'',
@@ -404,7 +660,8 @@ byName['剪纸'].fixed = true; byName['剪纸'].x = 0; byName['剪纸'].y = 0;
 const cntByCat = {}; nodes.forEach(n=>cntByCat[n.cat]=(cntByCat[n.cat]||0)+1);
 document.getElementById('stats').innerHTML = [
   [nodes.length,'符号节点'],[edges.length,'关联关系'],[Object.keys(CATS).length,'分割维度'],
-  [cntByCat.region,'地域流派（支）'],[cntByCat.symbol,'纹样符号（种）'],['2009','人类非遗入选']
+  [cntByCat.region,'地域流派（支）'],[cntByCat.symbol,'纹样符号（种）'],['2009','人类非遗入选'],
+  [12,'生肖分割样例'],[ZDET_TOTAL,'符号检测框（个）']
 ].map(s=>`<div class="stat"><div class="num">${s[0]}</div><div class="lab">${s[1]}</div></div>`).join('');
 
 /* ================= 筛选 chips ================= */
@@ -665,6 +922,77 @@ document.getElementById('topBars').innerHTML = top15.map(n=>`
     <span class="bv">${n.w}</span>
   </div>`).join('');
 
+/* ================= 生肖分割：渲染与交互 ================= */
+const ZCOLORS=['#2f6bff','#e08a1e','#2fa15c','#8c4ad0','#12a5b4','#d0455e','#7a6a2f'];
+const zGrid=document.getElementById('zGrid'), zView=document.getElementById('zView'),
+      zStage=document.getElementById('zStage');
+let zCur=null, zBoxes=[], zAnim=0;
+ZODIAC.forEach((z,i)=>{
+  const c=document.createElement('div');
+  c.className='z-cell';
+  c.innerHTML=`<svg viewBox="0 0 220 220">${z.art}</svg><div class="zn">${z.tag}</div><div class="zc">${z.det.length} 项符号</div>`;
+  c.onclick=()=>openZodiac(i,c);
+  zGrid.appendChild(c);
+});
+function openZodiac(i,cell){
+  [...zGrid.children].forEach(x=>x.classList.remove('on'));
+  cell.classList.add('on');
+  zCur=i;
+  const z=ZODIAC[i];
+  zView.style.display='block';
+  document.getElementById('zvName').textContent='安塞剪纸 · '+z.tag;
+  document.getElementById('zvTag').textContent='检测到 '+z.det.length+' 个符号单元';
+  document.getElementById('zArt').innerHTML=`<svg viewBox="0 0 220 220">${z.art}</svg>`;
+  document.getElementById('zMean').innerHTML=
+    `<b>生肖寓意</b>｜${z.mean}<br><b>技艺手法</b>｜${z.tech.join(' · ')}<br>`+
+    `<b>分割说明</b>｜检测框为符号标注演示数据，图形依据安塞剪纸造型特征程序化重绘`;
+  const syms=document.getElementById('zSyms');
+  syms.innerHTML=z.det.map((d,j)=>
+    `<span class="z-sym" data-j="${j}"><b>${d[0]}</b> <span class="cf">${d[1].toFixed(2)}</span><i>↗</i></span>`).join('');
+  zStage.querySelectorAll('.z-box').forEach(b=>b.remove());
+  zBoxes=z.det.map((d,j)=>{
+    const b=document.createElement('div');
+    b.className='z-box';
+    const col=ZCOLORS[j%ZCOLORS.length];
+    b.style.cssText=`left:${d[2]}%;top:${d[3]}%;width:${d[4]}%;height:${d[5]}%;border-color:${col}`;
+    b.innerHTML=`<span class="zl" style="background:${col}">${d[0]} ${d[1].toFixed(2)}</span>`;
+    zStage.appendChild(b);
+    return b;
+  });
+  syms.querySelectorAll('.z-sym').forEach(el=>{
+    el.onclick=e=>{
+      const j=+el.dataset.j;
+      if(e.target.tagName==='I'){
+        const n=byName[z.det[j][0]];
+        document.getElementById('graph').scrollIntoView({behavior:'smooth',block:'center'});
+        if(n) selectNode(n);
+        return;
+      }
+      el.classList.toggle('off');
+      zBoxes[j].classList.toggle('dim',el.classList.contains('off'));
+      zBoxes[j].classList.add('show');
+    };
+  });
+  playScan();
+}
+function playScan(){
+  cancelAnimationFrame(zAnim);
+  const scan=document.getElementById('zScan');
+  zBoxes.forEach(b=>b.classList.remove('show','dim'));
+  document.querySelectorAll('#zSyms .z-sym').forEach(s=>s.classList.remove('off'));
+  const ys=zCur!=null?ZODIAC[zCur].det.map(d=>d[3]):[];
+  scan.style.display='block';
+  const t0=performance.now(), D=1600;
+  (function step(now){
+    const p=Math.min(1,(now-t0)/D), y=p*100;
+    scan.style.top=y+'%';
+    ys.forEach((by,j)=>{ if(by<=y) zBoxes[j].classList.add('show'); });
+    if(p<1){ zAnim=requestAnimationFrame(step); }
+    else{ scan.style.display='none'; }
+  })(t0);
+}
+document.getElementById('zReplay').onclick=playScan;
+
 /* 二维码逻辑：本地/局域网打开时显示 qrcode.png（公网二维码）；
    公网托管访问时说明当前已在手机端 */
 (function(){
@@ -673,7 +1001,7 @@ document.getElementById('topBars').innerHTML = top15.map(n=>`
   const isLocal = !h || h==='localhost' || h==='127.0.0.1'
     || /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h);
   if(isLocal){
-    el.innerHTML='<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAdQAAAHUAQAAAACrXOTBAAADjElEQVR4nO2da24kIQyEwdr/PTfI/Y+VGzQn8AoMtJvelVyM9hGlPkUjplOlzBLLMoawWdMuRbatKdEbRwDtCr1xBNCu0BtHAO0KvXEE0K7QG0cA7cq39JY8SSnN1/zqr/1hucm+8L93E9k1Jnr/8jyrcbbx2UM6laxnfTtRJ+PvCEEg9R168bkqM+tWasQeI25Le37oQ8Z5jiOAdoXeOD+ej2q8HppbGGd7W16/aoNwnuMIoF2h9625UlVLwqpXFOfXH/+5YSQufUDv95iro9bFs6KwcR8c9Us/e9Xhgvxff+YdZMtl0Ptl5iobLQnXsnmuBEuukWwl9F32zz/zFrJna9D7/89V0gc9Idti0BJyWwyuupO/3zgCaFfoBdDWf7uCtqVlKyqWJl6yOGc87yBbLoNeALWcbLSI7V8Ww/NV1dfPzM8gghoc9AKoZeBRYLjtkp6rZ1pO9wTOegNBIPUdenf6z9l2TMYgHyOsbTFYXlqyllc+dCg5z3EE0K7QC8ezjt2TdJzaBvbEk1uo27daQHOe4wigXaEXXw+efbxWGq5+Vv+Q9QaGgHoPvQA6AvU2uK8QryNJRy+kGc8gghoc9O6sB5PlZ9959p26NA4pMZ53kC2XQe/OXGk7Jno1NM6UP3pPo3K0kP6cm4OcZwjB5DfoBVBXXcymXMWl4vkk+S0V7g8CCCJeoHd/f7DietGjVE5+zPUgjmx4BvQCqDuzYZE8t1eu1O32DVk/byF7tga9YP+59Jq4NpbndkkdnPn37ejEeQYQRLxAL4DOQ0e3sxnte8+zHA3WGziy4RnQC6Du/Ib/69drPNeA59W4a285z3EE0K7QC6CP+vlitDIu5enDm/McRwDtCr0A6rYF+6PZ0/CxPZlLRcYzgCDiBXoBdMEF9tXEu2KY8byHbPoq9AKoO/Ds29H3pV+6VdesN2AEt0zofeN+pNJ2tO1qL2vjlVw3vpM743H3biH0hpG49MF39ZZx8VFb7uUPdxhpHOnPdqNdi/b/4jPvIFsug94veD9SqVch9RQ891Dqxoq2P1GpKXskaP5+4wigXaH3jbk6tIZxyXMl2J+XXnW46zg4z3EE0K7QC6B+ATibG/ejGpdSeb5uD9n0Veh9436kMjKzXfx19pvrtC0VeyHN+5FgBLdM6I2T+f+nhJG49AG9cQTQrtAbRwDtCr1xBNCu0BtHAO0KvXHemaufiMHs+H6+lPAAAAAASUVORK5CYII=" alt="扫码查询二维码" style="width:180px;height:180px;display:block">';
+    el.innerHTML='<img src="qrcode-公网.png" alt="扫码查询二维码" style="width:180px;height:180px;display:block">';
   }else{
     el.innerHTML='<div style="width:180px;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--red)">'
       +'<div style="font-size:40px">✓</div>'
